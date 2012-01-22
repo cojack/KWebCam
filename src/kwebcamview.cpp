@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) %{CURRENT_YEAR} by %{AUTHOR} <%{EMAIL}>                            *
+ *   Copyright (C) 2012 by Przemysław Czekaj <xcojack@gmail.com>           *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -50,10 +50,10 @@ void KWebCamView::settingsChanged()
     QPalette pal;
     pal.setColor( QPalette::Window, Settings::col_background());
     pal.setColor( QPalette::WindowText, Settings::col_foreground());
-    ui_kwebcamview_base.kcfg_sillyLabel->setPalette( pal );
+    //ui_kwebcamview_base.kcfg_sillyLabel->setPalette( pal );
 
     // i18n : internationalization
-    ui_kwebcamview_base.kcfg_sillyLabel->setText( i18n("This project is %1 days old",Settings::val_time()) );
+    //ui_kwebcamview_base.kcfg_sillyLabel->setText( i18n("This project is %1 days old",Settings::val_time()) );
     emit signalChangeStatusbar( i18n("Settings changed") );
 }
 

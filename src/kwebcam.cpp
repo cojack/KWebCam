@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) %{CURRENT_YEAR} by %{AUTHOR} <%{EMAIL}>                            *
+ *   Copyright (C) 2012 by Przemysław Czekaj <xcojack@gmail.com>           *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -32,6 +32,10 @@
 #include <KActionCollection>
 #include <KStandardAction>
 
+#include <Solid/Device>
+#include <Solid/DeviceNotifier>
+#include "solid/video.h"
+
 #include <KLocale>
 
 KWebCam::KWebCam()
@@ -57,14 +61,83 @@ KWebCam::KWebCam()
     // mainwindow to automatically save settings if changed: window size,
     // toolbar position, icon size, etc.
     setupGUI();
+  
+
+    connect(&movie, SIGNAL(frameChanged(int)), this, SLOT(frameChanged(int)));    
+    
+    Solid::DeviceNotifier *notifier = Solid::DeviceNotifier::instance();
+    
+    foreach (Solid::Device device, Solid::Device::listFromType(Solid::DeviceInterface::Video, QString()))
+    {
+        //print the name of device
+        kDebug() << device.udi();
+        movie.setDevice( device.udi() );
+        m_videoDevices << device.udi();
+        getDetails( device );
+    }    
+      
+    
 }
 
 KWebCam::~KWebCam()
 {
 }
 
-void KWebCam::setupActions()
+void KWebCam::getDetails( const Solid::Device &dev )
 {
+    kDebug() << "New video device at " << dev.udi();
+    const Solid::Device * vendorDevice = &dev;
+    while ( vendorDevice->isValid() && vendorDevice->vendor().isEmpty() )
+    {
+        vendorDevice = new Solid::Device( vendorDevice->parentUdi() );
+    }
+    if ( vendorDevice->isValid() )
+    {
+        kDebug() << "vendor: " << vendorDevice->vendor() << ", product: " << vendorDevice->product();
+    }
+    QStringList protocols = dev.as<Solid::Video>()->supportedProtocols();
+    if ( protocols.contains( "video4linux" ) )
+    {
+        QStringList drivers = dev.as<Solid::Video>()->supportedDrivers( "video4linux" );
+        if ( drivers.contains( "video4linux" ) )
+        {
+            kDebug() << "V4L device path is" << dev.as<Solid::Video>()->driverHandle( "video4linux" ).toString();
+        }
+    }
+}
+
+void KWebCam::deviceAdded( const QString &udi )
+{
+    Solid::Device dev( udi );
+    if( dev.is<Solid::Video>() ) {
+        m_videoDevices << udi;
+        getDetails( dev );
+    }
+}
+
+void KWebCam::deviceRemoved(const QString &udi )
+{
+     Solid::Device dev = Solid::Device( udi );
+     int i;
+     if ( ( i = m_videoDevices.indexOf( udi ) ) != - 1 ) {
+        kDebug() << udi;
+        m_videoDevices.removeAt( i );
+     }
+}
+
+void KWebCam::frameChanged( int frame )
+{
+
+}
+
+bool KWebCam::presentImage( const QImage &image )
+{
+  Q
+}
+
+
+void KWebCam::setupActions()
+{  
     KStandardAction::openNew(this, SLOT(fileNew()), actionCollection());
     KStandardAction::quit(qApp, SLOT(closeAllWindows()), actionCollection());
 
@@ -78,6 +151,7 @@ void KWebCam::setupActions()
 
 void KWebCam::fileNew()
 {
+    movie.play();
     // this slot is called whenever the File->New menu is selected,
     // the New shortcut is pressed (usually CTRL+N) or the New toolbar
     // button is clicked

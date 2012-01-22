@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) %{CURRENT_YEAR} by %{AUTHOR} <%{EMAIL}>                            *
+ *   Copyright (C) 2012 by Przemysław Czekaj <xcojack@gmail.com>           *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,6 +22,7 @@
 
 
 #include <KXmlGuiWindow>
+#include <QtGui/QMovie>
 
 #include "ui_prefs_base.h"
 
@@ -29,6 +30,12 @@ class KWebCamView;
 class QPrinter;
 class KToggleAction;
 class KUrl;
+class QAbstractVideoSurface;
+
+namespace Solid
+{
+    class Device;
+}
 
 /**
  * This class serves as the main window for KWebCam.  It handles the
@@ -52,13 +59,20 @@ public:
      */
     virtual ~KWebCam();
 
+protected:
+    void getDetails( const Solid::Device & );
+    
 private slots:
     void fileNew();
     void optionsPreferences();
-
+    void deviceAdded( const QString & );
+    void deviceRemoved( const QString & );
+    void frameChanged( int );
+    
 private:
     void setupActions();
-
+    bool presentImage( const QImage & );
+    
 private:
     Ui::prefs_base ui_prefs_base ;
     KWebCamView *m_view;
@@ -66,6 +80,9 @@ private:
     QPrinter   *m_printer;
     KToggleAction *m_toolbarAction;
     KToggleAction *m_statusbarAction;
+    QStringList m_videoDevices;
+    QAbstractVideoSurface *surface;
+    QMovie movie;
 };
 
 #endif // _KWEBCAM_H_
