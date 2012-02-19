@@ -21,11 +21,13 @@
 #define KWEBCAMVIEW_H
 
 #include <QtGui/QWidget>
+#include <QtGui/QMovie>
 
 #include "ui_kwebcamview_base.h"
 
 class QPainter;
 class KUrl;
+class QAbstractVideoSurface;
 
 /**
  * This is the main view class for KWebCam.  Most of the non-menu,
@@ -51,9 +53,17 @@ public:
      */
     virtual ~KWebCamView();
 
+    void runVideo(QString);
+    
 private:
+    bool presentImage(const QImage &image);
+  
     Ui::kwebcamview_base ui_kwebcamview_base;
-
+    QMovie movie;
+    QAbstractVideoSurface *surface;
+    QAbstractButton *playButton;
+    QSlider *positionSlider;
+    
 signals:
     /**
      * Use this signal to change the content of the statusbar
@@ -64,7 +74,7 @@ signals:
      * Use this signal to change the content of the caption
      */
     void signalChangeCaption(const QString& text);
-
+    
 private slots:
     void switchColors();
     void settingsChanged();

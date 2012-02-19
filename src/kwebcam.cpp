@@ -38,6 +38,8 @@
 
 #include <KLocale>
 
+#include <QFile>
+
 KWebCam::KWebCam()
     : KXmlGuiWindow(),
       m_view(new KWebCamView(this)),
@@ -62,8 +64,9 @@ KWebCam::KWebCam()
     // toolbar position, icon size, etc.
     setupGUI();
   
+    //m_movie = new QMovie(this);
 
-    connect(&movie, SIGNAL(frameChanged(int)), this, SLOT(frameChanged(int)));    
+    //connect(&movie, SIGNAL(frameChanged(int)), this, SLOT(frameChanged(int)));    
     
     Solid::DeviceNotifier *notifier = Solid::DeviceNotifier::instance();
     
@@ -71,8 +74,13 @@ KWebCam::KWebCam()
     {
         //print the name of device
         kDebug() << device.udi();
-        movie.setDevice( device.udi() );
+        
+        
+        //kDebug() << device.description();
+        //m_movie->setDevice( device.as<QIODevice>() );
+        //kDebug() << ::c_open_device(QFile::encodeName(device.udi()));
         m_videoDevices << device.udi();
+        //v4l2_open(QFile::encodeName(device.udi()), O_RDWR | O_NONBLOCK, 0);
         getDetails( device );
     }    
       
@@ -104,6 +112,8 @@ void KWebCam::getDetails( const Solid::Device &dev )
             kDebug() << "V4L device path is" << dev.as<Solid::Video>()->driverHandle( "video4linux" ).toString();
         }
     }
+    
+    m_view->runVideo(dev.as<Solid::Video>()->driverHandle( "video4linux" ).toString());
 }
 
 void KWebCam::deviceAdded( const QString &udi )
@@ -130,12 +140,6 @@ void KWebCam::frameChanged( int frame )
 
 }
 
-bool KWebCam::presentImage( const QImage &image )
-{
-  Q
-}
-
-
 void KWebCam::setupActions()
 {  
     KStandardAction::openNew(this, SLOT(fileNew()), actionCollection());
@@ -151,7 +155,7 @@ void KWebCam::setupActions()
 
 void KWebCam::fileNew()
 {
-    movie.play();
+    //movie.play();
     // this slot is called whenever the File->New menu is selected,
     // the New shortcut is pressed (usually CTRL+N) or the New toolbar
     // button is clicked

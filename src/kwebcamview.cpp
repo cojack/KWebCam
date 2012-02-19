@@ -23,17 +23,46 @@
 #include <KLocale>
 #include <QtGui/QLabel>
 
-KWebCamView::KWebCamView(QWidget *)
+#include <Phonon/MediaObject>
+#include <Phonon/VideoWidget>
+#include <Phonon/AudioOutput>
+
+KWebCamView::KWebCamView(QWidget *) : surface(0)
+     , playButton(0)
+     , positionSlider(0)
 {
+     connect(&movie, SIGNAL(stateChanged(QMovie::MovieState)),
+             this, SLOT(movieStateChanged(QMovie::MovieState)));
+     connect(&movie, SIGNAL(frameChanged(int)),
+             this, SLOT(frameChanged(int)));  
+  
+  
     ui_kwebcamview_base.setupUi(this);
     settingsChanged();
-    setAutoFillBackground(true);
+    setAutoFillBackground(true);    
 }
 
 KWebCamView::~KWebCamView()
 {
 
 }
+
+void KWebCamView::runVideo(QString device)
+{
+    //Phonon::MediaObject *mediaObject = new Phonon::MediaObject(this);
+    //Phonon::VideoWidget *videoWidget = new Phonon::VideoWidget(this);
+    //mediaObject->setCurrentSource(device);
+    //Phonon::createPath(mediaObject, this->ui_kwebcamview_base.videoPlayer);
+
+    //Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::VideoCategory, this);
+    //Phonon::createPath(mediaObject, audioOutput);
+    this->ui_kwebcamview_base.videoPlayer->play(device);
+    kDebug() << device;
+    //QLabel myLabel;
+    //myLabel.setPixmap(QPixmap::fromImage(this->ui_kwebcamview_base.videoPlayer.videoWidget->snapshot()));
+    //myLabel.show();     
+}
+
 
 void KWebCamView::switchColors()
 {

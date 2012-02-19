@@ -30,7 +30,7 @@ class KWebCamView;
 class QPrinter;
 class KToggleAction;
 class KUrl;
-class QAbstractVideoSurface;
+class QMovie;
 
 namespace Solid
 {
@@ -81,8 +81,7 @@ private:
     KToggleAction *m_toolbarAction;
     KToggleAction *m_statusbarAction;
     QStringList m_videoDevices;
-    QAbstractVideoSurface *surface;
-    QMovie movie;
+    QMovie *m_movie;
 };
 
 #endif // _KWEBCAM_H_
