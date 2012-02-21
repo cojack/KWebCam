@@ -27,6 +27,10 @@
 #include <Phonon/VideoWidget>
 #include <Phonon/AudioOutput>
 
+#include <QMessageBox>
+#include <QGraphicsPixmapItem>
+#include <QFileDialog>
+
 KWebCamView::KWebCamView(QWidget *) : surface(0)
      , playButton(0)
      , positionSlider(0)
@@ -38,6 +42,11 @@ KWebCamView::KWebCamView(QWidget *) : surface(0)
   
   
     ui_kwebcamview_base.setupUi(this);
+    
+    ui_kwebcamview_base.screenshotLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    ui_kwebcamview_base.screenshotLabel->setAlignment(Qt::AlignCenter);
+    ui_kwebcamview_base.screenshotLabel->setMinimumSize(240, 160);    
+    
     settingsChanged();
     setAutoFillBackground(true);    
 }
@@ -49,20 +58,89 @@ KWebCamView::~KWebCamView()
 
 void KWebCamView::runVideo(QString device)
 {
-    //Phonon::MediaObject *mediaObject = new Phonon::MediaObject(this);
-    //Phonon::VideoWidget *videoWidget = new Phonon::VideoWidget(this);
-    //mediaObject->setCurrentSource(device);
-    //Phonon::createPath(mediaObject, this->ui_kwebcamview_base.videoPlayer);
+    Phonon::MediaObject *mediaObject = new Phonon::MediaObject(this);
 
-    //Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(Phonon::VideoCategory, this);
-    //Phonon::createPath(mediaObject, audioOutput);
-    this->ui_kwebcamview_base.videoPlayer->play(device);
-    kDebug() << device;
+    Phonon::AudioOutput *audioOutput = new Phonon::AudioOutput(this);    
+    Phonon::VideoWidget *videoWidget = this->ui_kwebcamview_base.VideoWidget;
+//.videoPlayer->videoWidget();
+    
+    connect(ui_kwebcamview_base.playButton, SIGNAL(clicked()), mediaObject, SLOT(play()));
+    connect(ui_kwebcamview_base.stopButton, SIGNAL(clicked()), mediaObject, SLOT(stop()));
+    
+    
+    Phonon::Path audioPath = Phonon::createPath(mediaObject, audioOutput);
+    Phonon::Path videoPath = Phonon::createPath(mediaObject, videoWidget);    
+    
+    if (!audioPath.isValid()) {
+        QMessageBox::critical(this, "Error", "Your backend may not support audio capturing.");
+    }
+    if (!videoPath.isValid()) {
+        QMessageBox::critical(this, "Error", "Your backend may not support video capturing.");
+    }
+    
+    
+    Phonon::MediaSource source(Phonon::Capture::VideoType, Phonon::NoCaptureCategory);
+    kDebug() << source.type();
+    mediaObject->setCurrentSource(source);    
+    
+    connect(this->ui_kwebcamview_base.brightnessSlider, SIGNAL(valueChanged(int)), this, SLOT(setBrightness(int)));
+    connect(this->ui_kwebcamview_base.contrastSlider, SIGNAL(valueChanged(int)), this, SLOT(setContrast(int)));
+    connect(this->ui_kwebcamview_base.hueSlider, SIGNAL(valueChanged(int)), this, SLOT(setHue(int)));
+    connect(this->ui_kwebcamview_base.saturationSlider, SIGNAL(valueChanged(int)), this, SLOT(setSaturation(int)));
+    connect(this->ui_kwebcamview_base.snapShotButton, SIGNAL(clicked()), this, SLOT(takeSnapShot()));
+    
+    
+    kDebug() << QString("Gdzie ja kurwa jestem? ") + device;
+    
+    //mediaObject->play();
+    //this->ui_kwebcamview_base.videoPlayer->play();
+
     //QLabel myLabel;
     //myLabel.setPixmap(QPixmap::fromImage(this->ui_kwebcamview_base.videoPlayer.videoWidget->snapshot()));
     //myLabel.show();     
 }
 
+void KWebCamView::setBrightness(int i)
+{
+  this->ui_kwebcamview_base.VideoWidget->setBrightness((qreal)i/100);
+}
+
+void KWebCamView::setContrast(int i)
+{
+  this->ui_kwebcamview_base.VideoWidget->setContrast((qreal)i/100);
+}
+
+void KWebCamView::setHue(int i)
+{
+  this->ui_kwebcamview_base.VideoWidget->setHue((qreal)i/100);
+}
+
+void KWebCamView::setSaturation(int i)
+{
+  this->ui_kwebcamview_base.VideoWidget->setSaturation((qreal)i/100);
+}
+
+void KWebCamView::takeSnapShot()
+{
+  //QImage originalImage = this->ui_kwebcamview_base.VideoWidget->snapshot();
+  
+  QPixmap originalImage = QPixmap::grabWidget(this->ui_kwebcamview_base.VideoWidget);
+  
+  QString format = "png";
+  QString initialPath = QDir::currentPath() + tr("/dupa.") + format;
+
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), initialPath, tr("%1 Files (*.%2);;All Files (*)").arg(format.toUpper()).arg(format));
+  
+  if(originalImage.isNull()) {
+    QMessageBox::critical(this, "Error", "Obrazek jest pusty kurwa.");
+    return;
+  }
+  
+  if (!fileName.isEmpty())
+      kDebug() << originalImage.save(fileName, "PNG");  
+  
+  //ui_kwebcamview_base.screenshotLabel->setPixmap(originalPixmap.scaled(ui_kwebcamview_base.screenshotLabel->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
 
 void KWebCamView::switchColors()
 {

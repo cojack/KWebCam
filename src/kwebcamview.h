@@ -78,6 +78,11 @@ signals:
 private slots:
     void switchColors();
     void settingsChanged();
+    void setBrightness(int);
+    void setContrast(int);
+    void setHue(int);
+    void setSaturation(int);
+    void takeSnapShot();
 };
 
 #endif // KWebCamVIEW_H

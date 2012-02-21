@@ -63,24 +63,13 @@ KWebCam::KWebCam()
     // mainwindow to automatically save settings if changed: window size,
     // toolbar position, icon size, etc.
     setupGUI();
-  
-    //m_movie = new QMovie(this);
-
-    //connect(&movie, SIGNAL(frameChanged(int)), this, SLOT(frameChanged(int)));    
+   
     
     Solid::DeviceNotifier *notifier = Solid::DeviceNotifier::instance();
     
     foreach (Solid::Device device, Solid::Device::listFromType(Solid::DeviceInterface::Video, QString()))
     {
-        //print the name of device
-        kDebug() << device.udi();
-        
-        
-        //kDebug() << device.description();
-        //m_movie->setDevice( device.as<QIODevice>() );
-        //kDebug() << ::c_open_device(QFile::encodeName(device.udi()));
         m_videoDevices << device.udi();
-        //v4l2_open(QFile::encodeName(device.udi()), O_RDWR | O_NONBLOCK, 0);
         getDetails( device );
     }    
       
@@ -130,7 +119,7 @@ void KWebCam::deviceRemoved(const QString &udi )
      Solid::Device dev = Solid::Device( udi );
      int i;
      if ( ( i = m_videoDevices.indexOf( udi ) ) != - 1 ) {
-        kDebug() << udi;
+        //kDebug() << udi;
         m_videoDevices.removeAt( i );
      }
 }
